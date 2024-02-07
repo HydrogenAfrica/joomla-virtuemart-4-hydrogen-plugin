@@ -4,7 +4,7 @@
  * @package       VM Payment - Hydrogen
  * @author        Hydrogen
  * @copyright     Copyright (C) 2024 Hydrogen Ltd. All rights reserved.
- * @version       1.0.5, September 2016
+ * @version       1.0.0, January 2024
  * @license       GNU General Public License version 2 or later; see LICENSE
  */
 
@@ -268,6 +268,8 @@ class plgVmPaymentHydrogen extends vmPSPlugin
             // Remove the \'height\' style property from the div by setting it to auto
             if (modalContent) {
                 modalContent.style.height = \'auto\';
+                modalContent.style.width  = "26%";
+                
             }
         }
 
@@ -275,8 +277,10 @@ class plgVmPaymentHydrogen extends vmPSPlugin
             const modalContent = document.getElementById(\'modal\');
             // Add specific styling for mobile view if needed
             if (modalContent) {
-                modalContent.style.height = "100%";
+                modalContent.style.height = "80%";
                 modalContent.style.zIndex = "9";
+                modalContent.style.marginTop = "40px";
+                modalContent.style.marginBottom = "40px"
             }
         }
 
