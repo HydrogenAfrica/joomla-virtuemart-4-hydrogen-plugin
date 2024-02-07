@@ -34,19 +34,3 @@ If you are a developer, please join our Developer Community on [Slack](https://s
 
 If you have a patch or have stumbled upon an issue with the Joomla Virtuemart plugin, you can contribute this back to the code. Please read our [contributor guidelines](https://github.com/PaystackHQ/plugin-joomla-virtuemart/blob/master/CONTRIBUTING.md) for more information how you can do this.
 
-## Change Log
-Mar 14 2018 - v1.0.5
-- Fix amounts being displayed in kobo
-
-Sept 25 2016 - v1.0.4
-- Canceling the inline popup redirects
-- Show HTML table after verification
-
-Sept 21 2016 - v1.0.2
-- Fix issues found by JEDchecker
-- DS to DIRECTORY_SEPARATOR
-- Use GPL license
-- Use Currency code obtained and remove backticks from file
-
-Sep 19 2016 - v1.0.0
-- First Release
