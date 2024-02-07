@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension method="upgrade" group="vmpayment" type="plugin" version="2.5">
+    <name>VM Payment - Hydrogen</name>
+    <creationDate>September 2016</creationDate>
+    <author>Hydrogen</author>
+    <authorUrl>http://www.hydrogenpay.com</authorUrl>
+    <copyright>Copyright (C) 2024 Hydrogen Ltd. All rights reserved.</copyright>
+    <license>http://www.gnu.org/copyleft/gpl.html GNU/GPL</license>
+    <version>1.0.5</version>
+
+    <description>
+        <![CDATA[
+            Accept payments via Master Card, Visa and Verve. <a href="https://dashboard.hydrogen.com/" target="_blank">Click here to sign up for a Hydrogen account</a>.
+		]]>
+    </description>
+
+    <languages>
+        <language tag="en-GB">language/en-GB.plg_vmpayment_hydrogen.ini</language>
+    </languages>
+
+    <files>
+        <folder>language</folder>
+        <filename plugin="hydrogen">hydrogen.php</filename>
+    </files>
+
+    <vmconfig>
+        <fields name="params">
+            <fieldset name="payment" addfieldpath="/plugins/vmpayment/hydrogen/hydrogen/fields">
+                <field name="test_mode"
+                       type="list"
+                       default="0"
+                       label="VMPAYMENT_HYDROGEN_TEST_MODE_LBL"
+                       description="VMPAYMENT_HYDROGEN_TEST_DESC">
+                    <option value="0">COM_VIRTUEMART_NO</option>
+                    <option value="1">COM_VIRTUEMART_YES</option>
+                </field>
+                <field type="vmtitle"
+                       description=""
+                       default="VMPAYMENT_HYDROGEN_HYDROGEN_CONF"/>
+                <field type="text"
+                       name="test_secret_key"
+                       description="VMPAYMENT_HYDROGEN_TEST_SECRET_KEY_DESC"
+                       default=""
+                       label="VMPAYMENT_HYDROGEN_TEST_SECRET_KEY_LBL"
+                       size="50"/>
+                <field type="text"
+                       name="test_public_key"
+                       description="VMPAYMENT_HYDROGEN_TEST_PUBLIC_KEY_DESC"
+                       default=""
+                       label="VMPAYMENT_HYDROGEN_TEST_PUBLIC_KEY_LBL"
+                       size="50"/>
+                <field type="text"
+                       name="live_secret_key"
+                       description="VMPAYMENT_HYDROGEN_LIVE_SECRET_KEY_DESC"
+                       default=""
+                       label="VMPAYMENT_HYDROGEN_LIVE_SECRET_KEY_LBL"
+                       size="50"/>
+                <field type="text"
+                       name="live_public_key"
+                       description="VMPAYMENT_HYDROGEN_LIVE_PUBLIC_KEY_DESC"
+                       default=""
+                       label="VMPAYMENT_HYDROGEN_LIVE_PUBLIC_KEY_LBL"
+                       size="50"/>
+            </fieldset>
+        </fields>
+    </vmconfig>
+
+    <updateservers>
+        <server type="extension" name="VirtueMart plg_vmpayment_hydrogen Update Site">
+            <![CDATA[https://raw.githubusercontent.com/HydrogenHQ/Joomla-VirtueMart-3-Hydrogen/master/version.xml]]></server>
+    </updateservers>
+</extension>
