@@ -66,7 +66,7 @@ There are 2 states on your dashboard: Live Mode and Test Mode. You'll see the Te
 
 When you go to the Settings Page to get your Auth Token, please note the mode that your dashboard is in, as that will determine the tokens that will be displayed. So if the dashboard is on Test Mode, you can only see the Test Auth Token and vice versa. To see the other token, switch the toggle from one mode to another.
 
-At the top of this tab is the Test Mode dropdown. Hydrogen provides test parameters that allow you to simulate a transaction without using real money. If you select Yes, Hydrogen will be using your Auth Test Token to parse the payments, meaning that the orders processed then will be done with test cards, no real money is exchanged, therefore, no real value should be delivered.
+At the top of this tab is the Test Mode dropdown. Hydrogen provides test parameters that allow you to simulate a transaction without using real money. If you select Yes, Hydrogen will be using your Test Auth Token to parse the payments, meaning that the orders processed then will be done with test cards, no real money is exchanged, therefore, no real value should be delivered.
 
 If you do these things correctly, you should see Hydrogen in the list of payment options on checkout.
 
