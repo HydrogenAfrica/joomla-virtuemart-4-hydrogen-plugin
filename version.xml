@@ -9,13 +9,13 @@
 		</description>
 		<element>hydrogen</element>
 		<type>plugin</type>
-		<version>1.0.4</version>
+		<version>1.0.0</version>
 		<infourl title="VirtueMart URL">
-			https://github.com/HydrogenHQ/joomla-virtueMart-4-hydrogen/releases/tag/1.0.4
+			https://github.com/HydrogenAfrica/joomla-virtueMart-4-hydrogen/releases/tag/1.0.0
 		</infourl>
 		<downloads>
 		<downloadurl type="upgrade" format="zip">
-			https://github.com/HydrogenHQ/joomla-virtueMart-4-hydrogen/archive/1.0.4.zip
+			https://github.com/HydrogenAfrica/joomla-virtueMart-4-hydrogen/archive/1.0.0.zip
 		</downloadurl>
 		</downloads>
 		<maintainer>Hydrogen</maintainer>

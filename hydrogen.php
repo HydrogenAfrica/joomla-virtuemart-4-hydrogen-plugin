@@ -10,42 +10,43 @@
 
 defined('_JEXEC') or die('Direct access to ' . basename(__FILE__) . ' is not allowed.');
 
+// Check if the parent class vmPSPlugin exists and include it if not
 if (!class_exists('vmPSPlugin'))
     require(JPATH_VM_PLUGINS . DIRECTORY_SEPARATOR . 'vmpsplugin.php');
 
+// Hydrogen payment plugin class
 class plgVmPaymentHydrogen extends vmPSPlugin
 {
+
+    // Constructor and configuration parameters set
     function __construct(&$subject, $config)
     {
         parent::__construct($subject, $config);
 
+        // Set Hydrogen plugin properties
         $this->_loggable  = true;
         $this->_tablepkey = 'id';
         $this->_tableId   = 'id';
 
         $this->tableFields = array_keys($this->getTableSQLFields());
 
+        // Table fields for hydrogen plugin
         $varsToPush = array(
+            // Configuration parameters for test mode and live Auth token keys
             'test_mode' => array(
                 1,
                 'int'
             ), // hydrogen.xml (test_mode)
-            'live_secret_key' => array(
-                '',
-                'char'
-            ), // hydrogen.xml (live_secret_key)
             'live_public_key' => array(
                 '',
                 'char'
             ), // hydrogen.xml (live_public_key)
-            'test_secret_key' => array(
-                '',
-                'char'
-            ), // hydrogen.xml (test_secret_key)
             'test_public_key' => array(
                 '',
                 'char'
             ), // hydrogen.xml (test_public_key)
+
+            // Configuration parameters for order statuses and transaction costs
             'status_pending' => array(
                 '',
                 'char'
@@ -81,14 +82,17 @@ class plgVmPaymentHydrogen extends vmPSPlugin
             )
         );
 
+        // Configuration parameters set
         $this->setConfigParameterable($this->_configTableFieldName, $varsToPush);
     }
 
+    // Hydrogen database table structure
     public function getVmPluginCreateTableSQL()
     {
         return $this->createTableSQL('Payment Hydrogen Table');
     }
 
+    // Hydrogen database table fields set
     function getTableSQLFields()
     {
         $SQLfields = array(
@@ -108,97 +112,107 @@ class plgVmPaymentHydrogen extends vmPSPlugin
         return $SQLfields;
     }
 
+    // Hydrogen payment settings based on payment method ID (Auth token keys)
     function getHydrogenSettings($payment_method_id)
     {
         $hydrogen_settings = $this->getPluginMethod($payment_method_id);
 
         if ($hydrogen_settings->test_mode) {
-            $secret_key = $hydrogen_settings->test_secret_key;
+            // $secret_key = $hydrogen_settings->test_secret_key;
             $public_key = $hydrogen_settings->test_public_key;
             $script_src = 'https://hydrogenshared.blob.core.windows.net/paymentgateway/paymentGatewayInegration.js';
+            $confirm_payment_url = 'https://qa-api.hydrogenpay.com/bepayment/api/v1/Merchant/confirm-payment';
         } else {
-            $secret_key = $hydrogen_settings->live_secret_key;
+            // $secret_key = $hydrogen_settings->live_secret_key;
             $public_key = $hydrogen_settings->live_public_key;
             $script_src = 'https://hydrogenshared.blob.core.windows.net/paymentgateway/HydrogenPGIntegration.js';
+            $confirm_payment_url = 'https://api.hydrogenpay.com/bepay/api/v1/Merchant/confirm-payment';
         }
 
-        $secret_key = str_replace(' ', '', $secret_key);
+        // Remove any whitespace from API keys and script
         $public_key = str_replace(' ', '', $public_key);
+        $script_src = str_replace(' ', '', $script_src);
 
         return array(
-            'secret_key' => $secret_key,
             'public_key' => $public_key,
-            'script_src' => $script_src
+            'script_src' => $script_src,
+            'confirm_payment_url' => $confirm_payment_url
         );
     }
 
     function verifyHydrogenTransaction($token, $payment_method_id)
     {
-        $transactionStatus        = new stdClass();
+        // Initialize transaction status object
+        $transactionStatus = new stdClass();
         $transactionStatus->error = "";
 
-        // Get Secret Key from settings
+        // Get Hydrogen Auth Token Key from settings/payment method
         $hydrogen_settings = $this->getHydrogenSettings($payment_method_id);
+        $url = $hydrogen_settings['confirm_payment_url'];
+        $auth_key = $hydrogen_settings['public_key'];
 
-        // try a file_get verification
-        $opts = array(
-            'http' => array(
-                'method' => "GET",
-                'header' => "Authorization: Bearer " . $hydrogen_settings['secret_key']
-            )
-        );
-
-        $context  = stream_context_create($opts);
-        $url      = "https://api.hydrogen.co/transaction/verify/" . $token;
-        $response = file_get_contents($url, false, $context);
-
-        // if file_get didn't work, try curl
-        if (!$response) {
-            curl_setopt($ch, CURLOPT_URL, "https://api.hydrogen.co/transaction/verify/" . $token);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-                'Authorization: Bearer ' . $hydrogen_settings['secret_key']
-            ));
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_HEADER, false);
-
-            // Make sure CURL_SSLVERSION_TLSv1_2 is defined as 6
-            // cURL must be able to use TLSv1.2 to connect
-            // to Hydrogen servers
-            if (!defined('CURL_SSLVERSION_TLSv1_2')) {
-                define('CURL_SSLVERSION_TLSv1_2', 6);
-            }
-            curl_setopt($ch, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
-            // exec the cURL
-            $response = curl_exec($ch);
-            // should be 0
-            if (curl_errno($ch)) {
-                // curl ended with an error
-                $transactionStatus->error = "cURL said:" . curl_error($ch);
-            }
-            //close connection
-            curl_close($ch);
+        // Check if $token is null or not
+        if ($token === null) {
+            $transactionStatus->error = "Token is null";
+            return $transactionStatus;
         }
 
-        if ($response) {
-            $body = json_decode($response);
-            if (!$body->status) {
-                // hydrogen has an error message for us
-                $transactionStatus->error = "Hydrogen API said: " . $body->message;
+        // Initialize cURL handle
+        $ch = curl_init();
+
+        // Set cURL options
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Authorization: ' . $auth_key,
+            'Content-Type: application/json',
+            'Cache-Control: no-cache'
+        ));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(array('transactionRef' => $token)));
+        // curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(array('transactionRef' => '31674786_520091e5c1')));
+
+        // Execute cURL request
+        $response = curl_exec($ch);
+
+        // Get HTTP response code
+        $response_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+        // Check for cURL errors
+        if (curl_errno($ch)) {
+            // cURL ended with an error
+            $transactionStatus->error = "cURL error: " . curl_error($ch);
+        }
+
+        // Close cURL connection
+        curl_close($ch);
+
+        // Parse response and handle errors
+        if ($response_code == 200) {
+            // Request was successful
+            $response_data = json_decode($response);
+
+            if (isset($response_data->data->status) && $response_data->data->status == "Paid") {
+                // Transaction is paid
+                $transactionStatus = $response_data->data;
             } else {
-                // get body returned by Hydrogen API
-                $transactionStatus = $body->data;
+
+                // Transaction is failed
+                $transactionStatus = $response_data->data; //pending or failed
             }
         } else {
-            // no response
-            $transactionStatus->error = $transactionStatus->error . " : No response";
+            // Request failed
+            $transactionStatus->error = "Request failed with HTTP code: " . $response_code . '' . $response;
         }
-
 
         return $transactionStatus;
     }
 
+    // Process confirmed orders
     function plgVmConfirmedOrder($cart, $order)
     {
+        // Retrieve the payment method for the order (Hydrogen)
         if (!($method = $this->getVmPluginMethod($order['details']['BT']->virtuemart_paymentmethod_id))) {
             return null;
         }
@@ -206,18 +220,18 @@ class plgVmPaymentHydrogen extends vmPSPlugin
             return false;
         }
 
+        // Include necessary VirtueMart models if not already included
         if (!class_exists('VirtueMartModelOrders'))
             require(JPATH_VM_ADMINISTRATOR . DIRECTORY_SEPARATOR . 'models' . DIRECTORY_SEPARATOR . 'orders.php');
 
         if (!class_exists('VirtueMartModelCurrency'))
             require(JPATH_VM_ADMINISTRATOR . DIRECTORY_SEPARATOR . 'models' . DIRECTORY_SEPARATOR . 'currency.php');
 
-        // Get current order info
+        // Get order information
         $order_info   = $order['details']['BT'];
         $country_code = ShopFunctions::getCountryByID($order_info->virtuemart_country_id, 'country_3_code');
 
-
-        // Get payment currency
+        // Get payment currency and total amount
         $this->getPaymentCurrency($method);
         $db = JFactory::getDbo();
         $query = $db->getQuery(true);
@@ -232,7 +246,7 @@ class plgVmPaymentHydrogen extends vmPSPlugin
         // Get total amount for the current payment currency
         $totalInPaymentCurrency = vmPSPlugin::getAmountInCurrency($order['details']['BT']->order_total, $method->payment_currency);
 
-        // Prepare data that should be stored in the database
+        // Prepare data for database storage
         $dbValues['order_number']                   = $order['details']['BT']->order_number;
         $dbValues['payment_name']                   = $this->renderPluginName($method, $order);
         $dbValues['virtuemart_paymentmethod_id']    = $order['details']['BT']->virtuemart_paymentmethod_id;
@@ -241,34 +255,39 @@ class plgVmPaymentHydrogen extends vmPSPlugin
         $dbValues['payment_currency']               = $method->payment_currency;
         $dbValues['payment_order_total']            = $totalInPaymentCurrency;
         $dbValues['tax_id']                         = $method->tax_id;
-        $dbValues['hydrogen_transaction_reference'] = $dbValues['order_number'] . '-' . date('YmdHis');
+        // $dbValues['hydrogen_payment_reference'] = $dbValues['order_number'] . '-' . date('YmdHis');
 
+        // Store data in the database
         $this->storePSPluginInternalData($dbValues);
 
-        // Return URL - Verify Hydrogen payment
+        // Return URL for Hydrogen payment verification
         $return_url = JURI::root() . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginresponsereceived&on=' . $order['details']['BT']->order_number . '&pm=' . $order['details']['BT']->virtuemart_paymentmethod_id . '&Itemid=' . vRequest::getInt('Itemid') . '&lang=' . vRequest::getCmd('lang', '');
 
-        // Hydrogenk Settings
-        $payment_method_id = $dbValues['virtuemart_paymentmethod_id']; //vRequest::getInt('virtuemart_paymentmethod_id');
+        // Hydrogen settings and construct HTML code for payment
+        $payment_method_id = $dbValues['virtuemart_paymentmethod_id'];
         $hydrogen_settings = $this->getHydrogenSettings($payment_method_id);
+
         // Hydrogen Gateway HTML code
         $html = '
         <p>Your order is being processed. Please wait...</p>
         <form id="hydrogen-pay-form" action="' . $return_url . '" method="post">
-        <script src="https://hydrogenshared.blob.core.windows.net/paymentgateway/paymentGatewayInegration.js"></script>
+        <script src="' . $hydrogen_settings['script_src'] . '"></script>
           <button id="hydrogen-pay-btn" style="display:none" type="button" onclick="openDialogModal()"> Click here </button>
           <input type="hidden" value="' . $payment_method_id . '" name="payment_method_id" />
-          <input type="hidden" value="' . $dbValues['hydrogen_transaction_reference'] . '" name="token" />
+          <input type="hidden" id="hydrogen-transaction-reference" name="token" />
         </form>
 
-        <script>
-        
+        <script>  
         function adjustModalHeight() {
             const modalContent = document.getElementById(\'modal\');
             // Remove the \'height\' style property from the div by setting it to auto
             if (modalContent) {
-                modalContent.style.height = \'auto\';
-                modalContent.style.width  = "26%";
+                modalContent.style.height = "100%";
+                // modalContent.style.height = \'auto\';
+                modalContent.style.width  = "31rem";
+                // modalContent.style.zIndex = "9";
+                // modalContent.style.marginTop = "40px";
+                // modalContent.style.marginBottom = "40px"
                 
             }
         }
@@ -289,15 +308,15 @@ class plgVmPaymentHydrogen extends vmPSPlugin
             var decimalPlaces = strAmount[1] === undefined ? 0: strAmount[1].length;
             var formattedAmount = strAmount[0];
 
-            if (decimalPlaces === 0) {
-                formattedAmount += \'00\';
+            // if (decimalPlaces === 0) {
+            //     formattedAmount += \'00\';
 
-            } else if (decimalPlaces === 1) {
-                formattedAmount += strAmount[1] + \'0\';
+            // } else if (decimalPlaces === 1) {
+            //     formattedAmount += strAmount[1] + \'0\';
 
-            } else if (decimalPlaces === 2) {
-                formattedAmount += strAmount[1];
-            }
+            // } else if (decimalPlaces === 2) {
+            //     formattedAmount += strAmount[1];
+            // }
 
             return formattedAmount;
         }
@@ -305,12 +324,12 @@ class plgVmPaymentHydrogen extends vmPSPlugin
 
         let obj = {
 
-            amount: amount/100,
+            amount: amount,
             email: \'' . $order_info->email . '\',
             currency: \'' . $currency_code . '\',
-            description: "test desc",
-            meta: "test meta",
-            callback: "https://hydrogenpay.com/", // Your callback redirect
+            description: "Payment for ' . $dbValues['order_number'] .  ' Order was successful",
+            meta: \'' . $order_info->first_name . ' ' . $order_info->last_name . '\',
+            callback: "' . JURI::root() . '", 
             isAPI: false,
         };
         
@@ -318,7 +337,7 @@ class plgVmPaymentHydrogen extends vmPSPlugin
         // let token = "5030219925952571987360C340A592712A3F582D8625"; // For qa or prod
 
         let token = \'' . $hydrogen_settings['public_key'] . '\'; // For qa or prod
-        
+                
         // Define the openDialogModal function
         async function openDialogModal() {
         
@@ -334,29 +353,80 @@ class plgVmPaymentHydrogen extends vmPSPlugin
                         adjustModalHeightForMobile()
 
                     }
+
+            const iframe = document.querySelector(\'.pgIframe\');
+
+            var closeButton = document.querySelector(\'.modal .close\');
+
+            // Access the content window of the iframe
+            const iframeContentWindow = iframe.contentWindow;
+
+            // Define a callback function to handle the transaction reference
+            const handleTransactionRef = function() {
+                const transactionRef = getParameterByName(\'TransactionRef\', iframeContentWindow.location.href);
+                console.log(\'TransactionRef from iframe:\', transactionRef);
         
+                // Check if the TransactionRef is available
+                    if (transactionRef !== null) {
+                        // Set the value of the hidden input field in the form
+                        document.getElementById(\'hydrogen-transaction-reference\').value = transactionRef;
+    
+                        // Hide the iframe
+                        // iframe.style.display = \'none\';
+
+                        closeButton.click();
+
+                        // Trigger form submission
+                        submitForm();
+
+                    }
+            };
+
+            iframe.onload = handleTransactionRef;
         }
 
         openDialogModal();
-          setTimeout(function(){document.getElementById(\'hydrogen-pay-btn\').style.display=\'block\';},10000);
+
+        setTimeout(function(){document.getElementById(\'hydrogen-pay-btn\').style.display=\'block\';},10000);
+
+        // Function to extract parameters from URL
+        function getParameterByName(name, url) {
+            if (!url) url = window.location.href;
+            name = name.replace(/[\[\]]/g, \'\\$&\');
+            var regex = new RegExp(\'[?&]\' + name + \'(=([^&#]*)|&|#|$)\'),
+            results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return \'\';
+            return decodeURIComponent(results[2].replace(/\\+/g, \' \'));
+        }
+
+        // Function to trigger form submission
+        function submitForm() {
+            document.getElementById(\'hydrogen-pay-form\').submit();
+        }
 
         </script>';
 
+        // Set cart status and HTML response
         $cart->_confirmDone   = FALSE;
         $cart->_dataValidated = FALSE;
         $cart->setCartIntoSession();
 
-        vRequest::setVar('html', $html);
+        vRequest::setVar('html', $html); // Display at FE
     }
 
+    // Handle payment response received from API (Form submitted)
     function plgVmOnPaymentResponseReceived(&$html)
     {
+        // Include required VirtueMart files and load language files
         if (!class_exists('VirtueMartCart')) {
             require(VMPATH_SITE . DIRECTORY_SEPARATOR . 'helpers' . DIRECTORY_SEPARATOR . 'cart.php');
         }
+
         if (!class_exists('shopFunctionsF')) {
             require(VMPATH_SITE . DIRECTORY_SEPARATOR . 'helpers' . DIRECTORY_SEPARATOR . 'shopfunctionsf.php');
         }
+
         if (!class_exists('VirtueMartModelOrders')) {
             require(VMPATH_ADMIN . DIRECTORY_SEPARATOR . 'models' . DIRECTORY_SEPARATOR . 'orders.php');
         }
@@ -392,17 +462,20 @@ class plgVmPaymentHydrogen extends vmPSPlugin
         $html .= $this->getHtmlRow('Payment Name', $payment_name);
         $html .= $this->getHtmlRow('Order Number', $order_number);
 
-        $transData = $this->verifyHydrogenTransaction($post_data['token'], $post_data['payment_method_id']);
-        if (!property_exists($transData, 'error') && property_exists($transData, 'status') && ($transData->status === 'success') && (strpos($transData->reference, $order_number . "-") === 0)) {
-            // Update order status - From pending to complete
+        $transData = $this->verifyHydrogenTransaction($post_data['token'], $post_data['payment_method_id']); // Verify Hydrogen Payment
+
+        if (!property_exists($transData, 'error') && property_exists($transData, 'status') && ($transData->status === 'Paid')) {
+            // Update order status - From pending to complete  // success
             $order['order_status']      = 'C';
             $order['customer_notified'] = 1;
             $orderModel->updateStatusForOneOrder($order['details']['BT']->virtuemart_order_id, $order, TRUE);
 
+            // HTML to display transaction details
             $html .= $this->getHtmlRow('Total Amount', number_format($transData->amount / 100, 2));
             $html .= $this->getHtmlRow('Status', $transData->status);
             $html .= '</table>' . "\n";
-            // add order url
+
+            // ink to view order details
             $url = JRoute::_('index.php?option=com_virtuemart&view=orders&layout=details&order_number=' . $order_number, FALSE);
             $html .= '<a href="' . JRoute::_('index.php?option=com_virtuemart&view=orders&layout=details&order_number=' . $order_number, FALSE) . '" class="vm-button-correct">' . vmText::_('COM_VIRTUEMART_ORDER_VIEW_ORDER') . '</a>';
 
@@ -412,8 +485,11 @@ class plgVmPaymentHydrogen extends vmPSPlugin
 
             return True;
         } else if (property_exists($transData, 'error')) {
+
+            // Error message if error property exists
             die($transData->error);
         } else {
+
             $html .= $this->getHtmlRow('Total Amount', number_format($transData->amount / 100, 2));
             $html .= $this->getHtmlRow('Status', $transData->status);
             $html .= '</table>' . "\n";
@@ -428,15 +504,13 @@ class plgVmPaymentHydrogen extends vmPSPlugin
         return False;
     }
 
+    // Handle user payment cancellation
     function plgVmOnUserPaymentCancel()
     {
         return true;
     }
 
-    /**
-     * Required functions by Joomla or VirtueMart. Removed code comments due to 'file length'.
-     * All copyrights are (c) respective year of author or copyright holder, and/or the author.
-     */
+    // Calculate the total cost of the transaction
     function getCosts(VirtueMartCart $cart, $method, $cart_prices)
     {
         if (preg_match('/%$/', $method->cost_percent_total)) {
@@ -447,19 +521,24 @@ class plgVmPaymentHydrogen extends vmPSPlugin
         return ($method->cost_per_transaction + ($cart_prices['salesPrice'] * $cost_percent_total * 0.01));
     }
 
+    // Check if conditions for using the payment method are met
     protected function checkConditions($cart, $method, $cart_prices)
     {
         $this->convert_condition_amount($method);
         // $address     = (($cart->ST == 0) ? $cart->BT : $cart->ST);
 
-        //Added fot shopping mangement
+        //Added for shopping mangement
         $address = $cart->ST;
         if (empty($address)) {
-            $address = $cart->BT;
+            $address = $cart->BT; // If shipping address is empty, use billing address
         }
+
+        // Get the total amount of the cart and check if the amount falls within the specified range
         $amount      = $this->getCartAmount($cart_prices);
         $amount_cond = ($amount >= $method->min_amount and $amount <= $method->max_amount or ($method->min_amount <= $amount and ($method->max_amount == 0)));
         $countries   = array();
+
+        // Get the list of countries where the payment method is available
         if (!empty($method->countries)) {
             if (!is_array($method->countries)) {
                 $countries[0] = $method->countries;
@@ -467,61 +546,76 @@ class plgVmPaymentHydrogen extends vmPSPlugin
                 $countries = $method->countries;
             }
         }
+
+        // Ensure address is an array and contains a country ID
         if (!is_array($address)) {
             $address                          = array();
             $address['virtuemart_country_id'] = 0;
         }
+
         if (!isset($address['virtuemart_country_id'])) {
             $address['virtuemart_country_id'] = 0;
         }
+
+        // Check if the address country is in the list of allowed countries or if the list is empty
         if (in_array($address['virtuemart_country_id'], $countries) || count($countries) == 0) {
             if ($amount_cond) {
                 return TRUE;
             }
         }
+        // Return FALSE if any condition is not met
         return FALSE;
     }
 
+    // Install payment plugin table
     function plgVmOnStoreInstallPaymentPluginTable($jplugin_id)
     {
         return $this->onStoreInstallPluginTable($jplugin_id);
     }
 
+    // Check payment method during selection
     public function plgVmOnSelectCheckPayment(VirtueMartCart $cart)
     {
         return $this->OnSelectCheck($cart);
     }
 
+    // Display payment method list in the front-end side
     public function plgVmDisplayListFEPayment(VirtueMartCart $cart, $selected = 0, &$htmlIn)
     {
         return $this->displayListFE($cart, $selected, $htmlIn);
     }
 
+    // Automatically select payment method based on conditions
     public function plgVmonSelectedCalculatePricePayment(VirtueMartCart $cart, array &$cart_prices, &$cart_prices_name)
     {
         return $this->onSelectedCalculatePrice($cart, $cart_prices, $cart_prices_name);
     }
 
+    // Show selected payment method in front-end order details
     function plgVmOnCheckAutomaticSelectedPayment(VirtueMartCart $cart, array $cart_prices = array(), &$paymentCounter)
     {
         return $this->onCheckAutomaticSelected($cart, $cart_prices, $paymentCounter);
     }
 
+    // Show selected payment method in order print view
     public function plgVmOnShowOrderFEPayment($virtuemart_order_id, $virtuemart_paymentmethod_id, &$payment_name)
     {
         $this->onShowOrderFE($virtuemart_order_id, $virtuemart_paymentmethod_id, $payment_name);
     }
 
+    // Show selected payment method in order print view
     function plgVmonShowOrderPrintPayment($order_number, $method_id)
     {
         return $this->onShowOrderPrint($order_number, $method_id);
     }
 
+    // Declare plugin parameters for VirtueMart 2/3/4
     function plgVmDeclarePluginParamsPaymentVM3(&$data)
     {
         return $this->declarePluginParams('payment', $data);
     }
 
+    // Set plugin parameters for payment method in database table
     function plgVmSetOnTablePluginParamsPayment($name, $id, &$table)
     {
         return $this->setOnTablePluginParams($name, $id, $table);

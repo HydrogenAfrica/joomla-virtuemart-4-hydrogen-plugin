@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <extension method="upgrade" group="vmpayment" type="plugin" version="2.5">
     <name>VM Payment - Hydrogen</name>
-    <creationDate>September 2016</creationDate>
+    <creationDate>January 2024</creationDate>
     <author>Hydrogen</author>
     <authorUrl>http://www.hydrogenpay.com</authorUrl>
     <copyright>Copyright (C) 2024 Hydrogen Ltd. All rights reserved.</copyright>
@@ -55,6 +55,6 @@
 
     <updateservers>
         <server type="extension" name="VirtueMart plg_vmpayment_hydrogen Update Site">
-            <![CDATA[https://raw.githubusercontent.com/HydrogenHQ/Joomla-VirtueMart-3-Hydrogen/master/version.xml]]></server>
+            <![CDATA[https://raw.githubusercontent.com/HydrogenAfrica/joomla-virtuemart-4-hydrogen-plugin/main/version.xml]]></server>
     </updateservers>
 </extension>
