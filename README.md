@@ -69,7 +69,7 @@ After that click on Save on the top of the page. When the page saves, click on t
 ### Step 5:
 Please go to your Hydrogen Dashboard >> Settings >> Auth Token, copy your Auth Token, and fill them in the appropriate fields.
 
-![images](images/Joomla-img2.png)
+![images](images/Joomla-img18.png)
 
 ### How to get your Test and Live Auth Token:
 There are 2 states on your dashboard: Live Mode and Test Mode. You'll see the Test Mode/Live Mode toggle on the top right corner of your dashboard. If there is no toggle and it's just Test Mode, this means that your Hydrogen account has not been activated.
