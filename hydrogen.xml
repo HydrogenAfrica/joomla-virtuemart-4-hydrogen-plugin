@@ -26,29 +26,17 @@
     <vmconfig>
         <fields name="params">
             <fieldset name="payment" addfieldpath="/plugins/vmpayment/hydrogen/hydrogen/fields">
-                <field name="test_mode"
-                       type="list"
-                       default="0"
-                       label="VMPAYMENT_HYDROGEN_TEST_MODE_LBL"
-                       description="VMPAYMENT_HYDROGEN_TEST_DESC">
+                <field name="test_mode" type="list" default="0" label="VMPAYMENT_HYDROGEN_TEST_MODE_LBL" description="VMPAYMENT_HYDROGEN_TEST_DESC">
                     <option value="0">COM_VIRTUEMART_NO</option>
                     <option value="1">COM_VIRTUEMART_YES</option>
                 </field>
-                <field type="vmtitle"
-                       description=""
-                       default="VMPAYMENT_HYDROGEN_HYDROGEN_CONF"/>
-                <field type="text"
-                       name="test_public_key"
-                       description="VMPAYMENT_HYDROGEN_TEST_PUBLIC_KEY_DESC"
-                       default=""
-                       label="VMPAYMENT_HYDROGEN_TEST_PUBLIC_KEY_LBL"
-                       size="50"/>
-                <field type="text"
-                       name="live_public_key"
-                       description="VMPAYMENT_HYDROGEN_LIVE_PUBLIC_KEY_DESC"
-                       default=""
-                       label="VMPAYMENT_HYDROGEN_LIVE_PUBLIC_KEY_LBL"
-                       size="50"/>
+                <field name="payment_redirect_mode" type="list" default="0" label="VMPAYMENT_HYDROGEN_PAYMENT_REDIRECT_MODE_LBL" description="VMPAYMENT_HYDROGEN_PAYMENT_REDIRECT_DESC">
+                    <option value="0">COM_VIRTUEMART_NO</option>
+                    <option value="1">COM_VIRTUEMART_YES</option>
+                </field>
+                <field type="vmtitle" description="" default="VMPAYMENT_HYDROGEN_HYDROGEN_CONF"/>
+                <field type="text" name="test_public_key" description="VMPAYMENT_HYDROGEN_TEST_PUBLIC_KEY_DESC" default="" label="VMPAYMENT_HYDROGEN_TEST_PUBLIC_KEY_LBL" size="50"/>
+                <field type="text" name="live_public_key" description="VMPAYMENT_HYDROGEN_LIVE_PUBLIC_KEY_DESC" default="" label="VMPAYMENT_HYDROGEN_LIVE_PUBLIC_KEY_LBL" size="50"/>
             </fieldset>
         </fields>
     </vmconfig>
