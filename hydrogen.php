@@ -551,14 +551,28 @@ class plgVmPaymentHydrogen extends vmPSPlugin
             const modalContent = document.getElementById(\'modal\');
             // Remove the \'height\' style property from the div by setting it to auto
             if (modalContent) {
-                modalContent.style.height = "100%";
+
+                modalContent.style.height = "95%";
                 // modalContent.style.height = \'auto\';
-                modalContent.style.width  = "31rem";
+                // modalContent.style.width  = "31rem";
                 // modalContent.style.zIndex = "9";
                 // modalContent.style.marginTop = "40px";
                 // modalContent.style.marginBottom = "40px"
                 
             }
+
+            const modal = document.getElementById(\'myModal\');
+            if (modal) {
+                modal.style.paddingTop = "1%";
+                modal.style.paddingBottom = "0%";
+                modal.style.zIndex = "9999"; 
+            }
+
+            const iframe = document.querySelector(\'.pgIframe\');
+            if (iframe) {
+                iframe.style.width = "27rem";
+            }
+
         }
 
         function adjustModalHeightForMobile() {
