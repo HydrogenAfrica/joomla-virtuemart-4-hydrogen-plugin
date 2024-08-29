@@ -67,16 +67,16 @@ Below are the fields that you need to fill in the form:
 After that click on Save on the top of the page. When the page saves, click on the Configuration tab. It will open the configuration page where you will be required to enter your Auth Token. You must save the Payment Method Information before clicking on the Configuration tab. If you don't do that, you will not see the Auth Token form.
 
 ### Step 5:
-Please go to your Hydrogen Dashboard >> Settings >> Auth Token, copy your Auth Token, and fill them in the appropriate fields.
+Please go to your Hydrogen Dashboard >> Settings >> API Key, copy your API Key, and fill them in the appropriate fields.
 
 ![images](images/Joomla-img18.png)
 
-### How to get your Test and Live Auth Token:
+### How to get your Sandbox and Live API Keys:
 There are 2 states on your dashboard: Live Mode and Test Mode. You'll see the Test Mode/Live Mode toggle on the top right corner of your dashboard. If there is no toggle and it's just Test Mode, this means that your Hydrogen account has not been activated.
 
-When you go to the Settings Page to get your Auth Token, please note the mode that your dashboard is in, as that will determine the tokens that will be displayed. So if the dashboard is on Test Mode, you can only see the Test Auth Token and vice versa. To see the other token, switch the toggle from one mode to another.
+When you go to the Settings Page to get your API Key, please note the mode that your dashboard is in, as that will determine the tokens that will be displayed. So if the dashboard is on Test Mode, you can only see the Sandbox API Key and vice versa. To see the other Key, switch the toggle from one mode to another.
 
-At the top of this tab is the Test Mode dropdown. Hydrogen provides test parameters that allow you to simulate a transaction without using real money. If you select Yes, Hydrogen will be using your Test Auth Token to parse the payments, meaning that the orders processed then will be done with test cards, no real money is exchanged, therefore, no real value should be delivered.
+At the top of this tab is the Test Mode dropdown. Hydrogen provides test parameters that allow you to simulate a transaction without using real money. If you select Yes, Hydrogen will be using your Sandbox API Key to parse the payments, meaning that the orders processed then will be done with test cards, no real money is exchanged, therefore, no real value should be delivered.
 
 If you do these things correctly, you should see Hydrogen in the list of payment options on checkout.
 
