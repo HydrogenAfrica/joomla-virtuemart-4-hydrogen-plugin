@@ -122,15 +122,13 @@ class plgVmPaymentHydrogen extends vmPSPlugin
         $hydrogen_settings = $this->getPluginMethod($payment_method_id);
 
         if ($hydrogen_settings->test_mode) {
-            // $secret_key = $hydrogen_settings->test_secret_key;
             $public_key = $hydrogen_settings->test_public_key;
-            $script_src = 'https://hydrogenshared.blob.core.windows.net/paymentgateway/paymentGatewayInegration.js';
-            $confirm_payment_url = 'https://qa-api.hydrogenpay.com/bepayment/api/v1/Merchant/confirm-payment';
+            $script_src = 'https://hydrogenshared.blob.core.windows.net/paymentgateway/paymentGatewayIntegration_v1PROD.js';
+            $confirm_payment_url = 'https://api.hydrogenpay.com/bepay/api/v1/Merchant/confirm-payment';
             $payment_redirect_mode = $hydrogen_settings->payment_redirect_mode;
         } else {
-            // $secret_key = $hydrogen_settings->live_secret_key;
             $public_key = $hydrogen_settings->live_public_key;
-            $script_src = 'https://hydrogenshared.blob.core.windows.net/paymentgateway/HydrogenPGIntegration.js';
+            $script_src = 'https://hydrogenshared.blob.core.windows.net/paymentgateway/paymentGatewayIntegration_v1PROD.js';
             $confirm_payment_url = 'https://api.hydrogenpay.com/bepay/api/v1/Merchant/confirm-payment';
             $payment_redirect_mode = $hydrogen_settings->payment_redirect_mode;
         }
@@ -260,7 +258,6 @@ class plgVmPaymentHydrogen extends vmPSPlugin
         curl_setopt($ch, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(array('transactionRef' => $token)));
-        // curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(array('transactionRef' => '31674786_520091e5c1')));
 
         // Execute cURL request
         $response = curl_exec($ch);
@@ -305,7 +302,7 @@ class plgVmPaymentHydrogen extends vmPSPlugin
         $transactionStatus = new stdClass();
         $transactionStatus->error = "";
 
-        // Get Hydrogen Auth Token Key from settings/payment method
+        // Get Hydrogen API Key from settings/payment method
         $hydrogen_settings = $this->getHydrogenSettings($payment_method_id);
         $url = $hydrogen_settings['confirm_payment_url'];
         $auth_key = $hydrogen_settings['public_key'];
@@ -486,7 +483,7 @@ class plgVmPaymentHydrogen extends vmPSPlugin
             );
 
             $secret_key = $hydrogen_settings['public_key'];
-            $hydrogen_url = 'https://qa-dev.hydrogenpay.com/qa/bepay/api/v1/merchant/initiate-payment';
+            $hydrogen_url = 'https://api.hydrogenpay.com/bepay/api/v1/merchant/initiate-payment';
 
             // Initialize cURL
             $curl = curl_init();
