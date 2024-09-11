@@ -122,15 +122,13 @@ class plgVmPaymentHydrogen extends vmPSPlugin
         $hydrogen_settings = $this->getPluginMethod($payment_method_id);
 
         if ($hydrogen_settings->test_mode) {
-            // $secret_key = $hydrogen_settings->test_secret_key;
             $public_key = $hydrogen_settings->test_public_key;
-            $script_src = 'https://hydrogenshared.blob.core.windows.net/paymentgateway/paymentGatewayInegration.js';
-            $confirm_payment_url = 'https://qa-api.hydrogenpay.com/bepayment/api/v1/Merchant/confirm-payment';
+            $script_src = 'https://hydrogenshared.blob.core.windows.net/paymentgateway/paymentGatewayIntegration_v1PROD.js';
+            $confirm_payment_url = 'https://api.hydrogenpay.com/bepay/api/v1/Merchant/confirm-payment';
             $payment_redirect_mode = $hydrogen_settings->payment_redirect_mode;
         } else {
-            // $secret_key = $hydrogen_settings->live_secret_key;
             $public_key = $hydrogen_settings->live_public_key;
-            $script_src = 'https://hydrogenshared.blob.core.windows.net/paymentgateway/HydrogenPGIntegration.js';
+            $script_src = 'https://hydrogenshared.blob.core.windows.net/paymentgateway/paymentGatewayIntegration_v1PROD.js';
             $confirm_payment_url = 'https://api.hydrogenpay.com/bepay/api/v1/Merchant/confirm-payment';
             $payment_redirect_mode = $hydrogen_settings->payment_redirect_mode;
         }
@@ -260,7 +258,6 @@ class plgVmPaymentHydrogen extends vmPSPlugin
         curl_setopt($ch, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(array('transactionRef' => $token)));
-        // curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(array('transactionRef' => '31674786_520091e5c1')));
 
         // Execute cURL request
         $response = curl_exec($ch);
@@ -305,7 +302,7 @@ class plgVmPaymentHydrogen extends vmPSPlugin
         $transactionStatus = new stdClass();
         $transactionStatus->error = "";
 
-        // Get Hydrogen Auth Token Key from settings/payment method
+        // Get Hydrogen API Key from settings/payment method
         $hydrogen_settings = $this->getHydrogenSettings($payment_method_id);
         $url = $hydrogen_settings['confirm_payment_url'];
         $auth_key = $hydrogen_settings['public_key'];
@@ -486,7 +483,7 @@ class plgVmPaymentHydrogen extends vmPSPlugin
             );
 
             $secret_key = $hydrogen_settings['public_key'];
-            $hydrogen_url = 'https://qa-dev.hydrogenpay.com/qa/bepay/api/v1/merchant/initiate-payment';
+            $hydrogen_url = 'https://api.hydrogenpay.com/bepay/api/v1/merchant/initiate-payment';
 
             // Initialize cURL
             $curl = curl_init();
@@ -551,16 +548,18 @@ class plgVmPaymentHydrogen extends vmPSPlugin
 
         function adjustModalHeight() {
 
-            const modalContent = document.getElementById(\'modal\');
+            const modalContent = document.getElementById(\'hydrogenPay_modal\');
             // Remove the \'height\' style property from the div by setting it to auto
             if (modalContent) {
-                modalContent.style.height = "95%";                
+                //modalContent.style.height = "95%";
+                modalContent.style.marginTop = "-20px";
+                modalContent.style.backgroundColor = "#fff"                
             }
 
-            const modal = document.getElementById(\'myModal\');
+            const modal = document.getElementById(\'hydrogenPay_myModal\');
             if (modal) {
-                modal.style.paddingTop = "1%";
-                modal.style.paddingBottom = "0%";
+                //modal.style.paddingTop = "1%";
+                //modal.style.paddingBottom = "0%";
                 modal.style.zIndex = "9999"; // Set z-index to 9999
 
             }
@@ -570,19 +569,20 @@ class plgVmPaymentHydrogen extends vmPSPlugin
 
             if (iframe) {
 
-                iframe.style.width = "27rem";
+                // iframe.style.width = "27rem";
             }
 
         }
 
         function adjustModalHeightForMobile() {
-            const modalContent = document.getElementById(\'modal\');
+            const modalContent = document.getElementById(\'hydrogenPay_modal\');
             // Add specific styling for mobile view if needed
             if (modalContent) {
-                modalContent.style.height = "80%";
-                modalContent.style.zIndex = "9";
+                //modalContent.style.height = "80%";
+                //modalContent.style.zIndex = "9";
                 modalContent.style.marginTop = "40px";
-                modalContent.style.marginBottom = "40px"
+                modalContent.style.backgroundColor = "#fff"
+                //modalContent.style.marginBottom = "40px"
             }
         }
 
@@ -640,7 +640,14 @@ class plgVmPaymentHydrogen extends vmPSPlugin
 
             const iframe = document.querySelector(\'.pgIframe\');
 
-            var closeButton = document.querySelector(\'.modal .close\');
+            // var closeButton = document.querySelector(\'.modal .close\');
+
+            function closeModal() {
+                let modalContainer = document.getElementById(\'myModal\');
+                    if (modalContainer) {
+                    modalContainer.remove();
+                }
+            }
 
             // Access the content window of the iframe
             const iframeContentWindow = iframe.contentWindow;
@@ -658,7 +665,8 @@ class plgVmPaymentHydrogen extends vmPSPlugin
                         // Hide the iframe
                         // iframe.style.display = \'none\';
 
-                        closeButton.click();
+                        // closeButton.click();
+                        closeModal(); 
 
                         // Trigger form submission
                         submitForm();
