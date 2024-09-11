@@ -548,16 +548,18 @@ class plgVmPaymentHydrogen extends vmPSPlugin
 
         function adjustModalHeight() {
 
-            const modalContent = document.getElementById(\'modal\');
+            const modalContent = document.getElementById(\'hydrogenPay_modal\');
             // Remove the \'height\' style property from the div by setting it to auto
             if (modalContent) {
-                modalContent.style.height = "95%";                
+                //modalContent.style.height = "95%";
+                modalContent.style.marginTop = "-20px";
+                modalContent.style.backgroundColor = "#fff"                
             }
 
-            const modal = document.getElementById(\'myModal\');
+            const modal = document.getElementById(\'hydrogenPay_myModal\');
             if (modal) {
-                modal.style.paddingTop = "1%";
-                modal.style.paddingBottom = "0%";
+                //modal.style.paddingTop = "1%";
+                //modal.style.paddingBottom = "0%";
                 modal.style.zIndex = "9999"; // Set z-index to 9999
 
             }
@@ -567,19 +569,20 @@ class plgVmPaymentHydrogen extends vmPSPlugin
 
             if (iframe) {
 
-                iframe.style.width = "27rem";
+                // iframe.style.width = "27rem";
             }
 
         }
 
         function adjustModalHeightForMobile() {
-            const modalContent = document.getElementById(\'modal\');
+            const modalContent = document.getElementById(\'hydrogenPay_modal\');
             // Add specific styling for mobile view if needed
             if (modalContent) {
-                modalContent.style.height = "80%";
-                modalContent.style.zIndex = "9";
+                //modalContent.style.height = "80%";
+                //modalContent.style.zIndex = "9";
                 modalContent.style.marginTop = "40px";
-                modalContent.style.marginBottom = "40px"
+                modalContent.style.backgroundColor = "#fff"
+                //modalContent.style.marginBottom = "40px"
             }
         }
 
@@ -637,7 +640,14 @@ class plgVmPaymentHydrogen extends vmPSPlugin
 
             const iframe = document.querySelector(\'.pgIframe\');
 
-            var closeButton = document.querySelector(\'.modal .close\');
+            // var closeButton = document.querySelector(\'.modal .close\');
+
+            function closeModal() {
+                let modalContainer = document.getElementById(\'myModal\');
+                    if (modalContainer) {
+                    modalContainer.remove();
+                }
+            }
 
             // Access the content window of the iframe
             const iframeContentWindow = iframe.contentWindow;
@@ -655,7 +665,8 @@ class plgVmPaymentHydrogen extends vmPSPlugin
                         // Hide the iframe
                         // iframe.style.display = \'none\';
 
-                        closeButton.click();
+                        // closeButton.click();
+                        closeModal(); 
 
                         // Trigger form submission
                         submitForm();
